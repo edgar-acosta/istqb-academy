@@ -2,6 +2,8 @@ import { eq } from "drizzle-orm";
 import * as schema from "@db/schema";
 import type { InsertUser, User } from "@db/schema";
 import { getDb } from "./connection";
+import { createPostgresUserQueries } from "./postgres-users";
+import { getPostgresDb, usePostgres } from "./postgres";
 
 export type PublicUser = Omit<User, "passwordHash">;
 
@@ -11,6 +13,7 @@ export function toPublicUser(user: User): PublicUser {
 }
 
 export async function findUserById(id: number) {
+  if (usePostgres) return createPostgresUserQueries(getPostgresDb()).findById(id);
   const rows = await getDb()
     .select()
     .from(schema.users)
@@ -20,6 +23,7 @@ export async function findUserById(id: number) {
 }
 
 export async function findUserByUsername(username: string) {
+  if (usePostgres) return createPostgresUserQueries(getPostgresDb()).findByUsername(username);
   const rows = await getDb()
     .select()
     .from(schema.users)
@@ -34,6 +38,7 @@ export async function countUsers(): Promise<number> {
 }
 
 export async function createUser(data: InsertUser) {
+  if (usePostgres) return createPostgresUserQueries(getPostgresDb()).createUser(data);
   const rows = await getDb()
     .insert(schema.users)
     .values(data)
@@ -42,6 +47,7 @@ export async function createUser(data: InsertUser) {
 }
 
 export async function updateLastSignIn(id: number) {
+  if (usePostgres) return createPostgresUserQueries(getPostgresDb()).updateLastSignIn(id);
   await getDb()
     .update(schema.users)
     .set({ lastSignInAt: new Date() })

@@ -1,0 +1,35 @@
+# Configuración del runner de GitLab para desplegar ISTQB Academy a Vercel.
+#
+# El token se obtiene al crear el runner en GitLab:
+#   Settings > CI/CD > Runners > Create project runner
+# GitLab lo muestra UNA sola vez y empieza con "glrt-".
+#
+# Este archivo se copia a config.toml y el token se sustituye; config.toml NO se
+# versiona porque contiene ese secreto.
+
+concurrent = 1
+check_interval = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "istqb-runner-docker"
+  url = "https://gitlab.tecnomotum.com"
+  token = "glrt-REEMPLAZA_ESTE_TOKEN"
+  executor = "docker"
+  # 2 evita el aviso "Long polling issues detected" que el runner emite con 1.
+  request_concurrency = 2
+  [runners.docker]
+    # Imagen base de los jobs. Coincide con la de .gitlab-ci.yml (node:22).
+    image = "node:22"
+    pull_policy = ["if-not-present"]
+    # Sin privilegios: el job solo necesita npm y la CLI de Vercel.
+    privileged = false
+    tls_verify = false
+    disable_cache = false
+    volumes = ["/cache"]
+    shm_size = 0
+  [runners.cache]
+    type = "local"
+    shared = false

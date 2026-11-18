@@ -1,12 +1,27 @@
 import fs from "node:fs";
 import path from "node:path";
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { createRequire as makeRequire } from "node:module";
 import { env } from "../lib/env";
 import * as schema from "@db/schema";
 import * as relations from "@db/relations";
 
 const fullSchema = { ...schema, ...relations };
+const nodeRequire = makeRequire(import.meta.url);
+
+// better-sqlite3 es un módulo nativo y en un despliegue con PostgreSQL nunca se
+// usa. Cargarlo de forma diferida permite arrancar donde el binario nativo no
+// está disponible (por ejemplo una función serverless), siempre que
+// DATABASE_URL apunte a PostgreSQL.
+function loadSqliteDriver() {
+  return {
+    Database: nodeRequire("better-sqlite3") as typeof import("better-sqlite3"),
+    drizzle: (nodeRequire("drizzle-orm/better-sqlite3") as typeof import("drizzle-orm/better-sqlite3")).drizzle,
+  };
+}
+
+function withSchema(sqlite: ReturnType<typeof loadSqliteDriver>["Database"]["prototype"]) {
+  return loadSqliteDriver().drizzle(sqlite, { schema: fullSchema });
+}
 
 export function getDbFilePath(): string {
   const url = env.databaseUrl;
@@ -16,13 +31,13 @@ export function getDbFilePath(): string {
     : path.resolve(process.cwd(), file);
 }
 
-let instance: ReturnType<typeof drizzle<typeof fullSchema>>;
+let instance: ReturnType<typeof withSchema> | undefined;
 
 export function getDb() {
   if (!instance) {
     const filePath = getDbFilePath();
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    const sqlite = new Database(filePath);
+    const sqlite = new (loadSqliteDriver().Database)(filePath);
     sqlite.pragma("journal_mode = WAL");
     sqlite.pragma("foreign_keys = ON");
     // Las tablas se crean solas en el primer arranque: no hace falta
@@ -101,7 +116,7 @@ export function getDb() {
       CREATE UNIQUE INDEX IF NOT EXISTS recognitions_user_version_idx
         ON recognitions(userId, courseVersion);
     `);
-    instance = drizzle(sqlite, { schema: fullSchema });
+    instance = withSchema(sqlite);
   }
   return instance;
 }

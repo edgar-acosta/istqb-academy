@@ -1,0 +1,19 @@
+{
+	email {$ACME_EMAIL}
+}
+
+# SITE_ADDRESS decide cómo se publica el portal:
+#   "http://:80"          -> red local por IP, HTTP plano, sin certificado.
+#   "academy.midominio.com" -> HTTPS automático (Let's Encrypt) con DNS y 80/443.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+	reverse_proxy app:3000
+
+	header {
+		# Solo tiene efecto sobre HTTPS; los navegadores ignoran HSTS en HTTP.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}

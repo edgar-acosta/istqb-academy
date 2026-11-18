@@ -1,0 +1,38 @@
+# Despliegue a Vercel desde GitLab autoalojado.
+#
+# Vercel no tiene integración nativa con GitLab Self-Managed: el despliegue lo
+# ejecuta este pipeline con la CLI y un token. Requiere tres variables CI/CD en
+# GitLab (Settings > CI/CD > Variables):
+#   VERCEL_TOKEN       token de acceso de Vercel (marcar Masked y Protected)
+#   VERCEL_ORG_ID      Team ID (o User ID si el proyecto es personal)
+#   VERCEL_PROJECT_ID  Project ID del proyecto en Vercel
+#
+# Guía: https://vercel.com/kb/guide/how-can-i-use-gitlab-pipelines-with-vercel
+
+default:
+  image: node:22
+
+stages:
+  - deploy
+
+deploy_production:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - npm install --global vercel@latest
+    - vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+    # Sin --prebuilt a propósito: Vercel construye en su infraestructura igual
+    # que hasta ahora, así que sigue aplicando el bloque `builds` de vercel.json.
+    # Con --prebuilt el build corre en el runner y ese formato legacy no aplica.
+    - vercel deploy --prod --yes --token=$VERCEL_TOKEN -m gitlabDeployment=1 -m gitlabCommitRef=$CI_COMMIT_BRANCH
+
+# Opcional: despliegues de vista previa en ramas y merge requests.
+# deploy_preview:
+#   stage: deploy
+#   rules:
+#     - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+#   script:
+#     - npm install --global vercel@latest
+#     - vercel pull --yes --environment=preview --token=$VERCEL_TOKEN
+#     - vercel deploy --yes --token=$VERCEL_TOKEN -m gitlabDeployment=1 -m gitlabCommitRef=$CI_COMMIT_BRANCH

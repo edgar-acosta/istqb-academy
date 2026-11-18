@@ -3,6 +3,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
 import { log } from "./lib/logger";
+import { databaseErrorDetails } from "./lib/database-error";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
@@ -16,12 +17,12 @@ const t = initTRPC.context<TrpcContext>().create({
   // crashes, and logging those would drown the file.
   errorFormatter({ shape, error }) {
     if (error.code === "INTERNAL_SERVER_ERROR") {
-      log.error("trpc procedure failed", {
-        path: shape.data?.path,
-        code: error.code,
-        error: error.message,
-        stack: error.stack,
-      });
+      const databaseError = databaseErrorDetails(error);
+      if (databaseError) {
+        log.error("trpc database operation failed", { path: shape.data?.path, databaseCode: databaseError.code });
+        return { ...shape, message: "Error interno del servidor.", data: { ...shape.data, stack: undefined } };
+      }
+      log.error("trpc procedure failed", { path: shape.data?.path, code: error.code, error: error.message, stack: error.stack });
     }
     return shape;
   },

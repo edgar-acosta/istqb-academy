@@ -14,8 +14,9 @@ export async function createContext(
   const ctx: TrpcContext = { req: opts.req, resHeaders: opts.resHeaders };
   try {
     ctx.user = await authenticateRequest(opts.req.headers);
-  } catch {
-    // Authentication is optional here
+  } catch (error) {
+    if (typeof error !== "object" || error === null || !("tag" in error) || error.tag !== "app_error" ||
+        !("status" in error) || (error.status !== 401 && error.status !== 403)) throw error;
   }
   return ctx;
 }

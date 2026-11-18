@@ -6,6 +6,7 @@ import { getSessionCookieOptions } from "./lib/cookies";
 import { createRouter, authedQuery, publicQuery } from "./middleware";
 import { signSessionToken } from "./auth/session";
 import { hashPassword, verifyPassword } from "./auth/password";
+import { usePostgres } from "./queries/postgres";
 import {
   countUsers,
   createUser,
@@ -39,7 +40,7 @@ function setSessionCookie(ctx: { resHeaders: Headers; req: Request }, token: str
 }
 
 export const authRouter = createRouter({
-  // Registro local. La primera cuenta creada es administradora.
+  // Solo SQLite local conserva la promoción de la primera cuenta.
   register: publicQuery
     .input(
       z.object({
@@ -59,7 +60,7 @@ export const authRouter = createRouter({
           message: "Ese usuario ya existe. Elige otro nombre de usuario.",
         });
       }
-      const isFirstUser = (await countUsers()) === 0;
+      const isFirstUser = !usePostgres && (await countUsers()) === 0;
       const user = await createUser({
         username,
         passwordHash: hashPassword(input.password),

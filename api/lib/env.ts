@@ -14,7 +14,7 @@ function required(name: string): string {
   return value ?? "";
 }
 
-const sessionSecret = process.env.SESSION_SECRET ?? "";
+const sessionSecret = required("SESSION_SECRET");
 if (!sessionSecret && process.env.NODE_ENV !== "production") {
   console.warn(
     "[env] SESSION_SECRET no está definido; se usa un secreto solo para desarrollo. Defínelo en .env para sesiones persistentes.",
@@ -26,3 +26,7 @@ export const env = {
   isProduction: process.env.NODE_ENV === "production",
   databaseUrl: required("DATABASE_URL") || "file:./data/istqb.db",
 };
+
+if (process.env.VERCEL === "1" && !/^postgres(?:ql)?:\/\//i.test(env.databaseUrl)) {
+  throw new Error("Vercel requiere una conexión PostgreSQL persistente en DATABASE_URL.");
+}

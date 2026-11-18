@@ -6,10 +6,17 @@ import { getDb } from "./queries/connection";
 import { courseProgress, quizAttempts } from "../db/schema";
 import { COURSE_VERSION } from "@contracts/course";
 import { QUIZ_QUESTIONS, QUIZ_TOTAL } from "@contracts/quiz";
+import { getPostgresDb, usePostgres } from "./queries/postgres";
+import { courseProgress as pgProgress, quizAttempts as pgAttempts, users as pgUsers } from "../db/postgres-schema";
 
 export const trainingRouter = createRouter({
   // Progreso de módulos del usuario autenticado
   progress: authedQuery.query(async ({ ctx }) => {
+    if (usePostgres) {
+      const rows = await getPostgresDb().select().from(pgProgress).where(and(
+        eq(pgProgress.userId, ctx.user.id), eq(pgProgress.courseVersion, COURSE_VERSION)));
+      return rows.map((r) => ({ moduleId: r.moduleId, completedAt: r.completedAt }));
+    }
     const db = getDb();
     const rows = await db
       .select()
@@ -21,6 +28,20 @@ export const trainingRouter = createRouter({
   setModuleCompleted: authedQuery
     .input(z.object({ moduleId: z.number().int().min(1).max(10), completed: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
+      if (usePostgres) {
+        return getPostgresDb().transaction(async (tx) => {
+          const [user] = await tx.select({ id: pgUsers.id }).from(pgUsers).where(eq(pgUsers.id, ctx.user.id)).for("update");
+          if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Usuario no encontrado." });
+          if (input.completed) {
+            await tx.insert(pgProgress).values({ userId: ctx.user.id, courseVersion: COURSE_VERSION, moduleId: input.moduleId })
+              .onConflictDoUpdate({ target: [pgProgress.userId, pgProgress.courseVersion, pgProgress.moduleId], set: { completedAt: new Date() } });
+          } else {
+            await tx.delete(pgProgress).where(and(eq(pgProgress.userId, ctx.user.id),
+              eq(pgProgress.courseVersion, COURSE_VERSION), eq(pgProgress.moduleId, input.moduleId)));
+          }
+          return { completed: input.completed };
+        });
+      }
       const db = getDb();
       if (input.completed) {
         await db
@@ -46,6 +67,12 @@ export const trainingRouter = createRouter({
 
   // Evaluación final
   myAttempts: authedQuery.query(async ({ ctx }) => {
+    if (usePostgres) {
+      const rows = await getPostgresDb().select().from(pgAttempts).where(eq(pgAttempts.userId, ctx.user.id))
+        .orderBy(desc(pgAttempts.createdAt)).limit(20);
+      return rows.map((r) => ({ id: Number(r.id), score: r.score, total: r.total,
+        answers: JSON.parse(r.answers) as Record<string, number>, createdAt: r.createdAt }));
+    }
     const db = getDb();
     const rows = await db
       .select()
@@ -92,13 +119,14 @@ export const trainingRouter = createRouter({
         return { questionId: q.id, chosen, correct };
       });
 
-      const db = getDb();
-      await db.insert(quizAttempts).values({
+      const data = {
         userId: ctx.user.id,
         score,
         total: QUIZ_TOTAL,
         answers: JSON.stringify(answers),
-      });
+      };
+      if (usePostgres) await getPostgresDb().insert(pgAttempts).values(data);
+      else await getDb().insert(quizAttempts).values(data);
 
       return { score, total: QUIZ_TOTAL, detail };
     }),

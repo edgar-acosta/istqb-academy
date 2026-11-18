@@ -22,6 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Enlace local de Vercel (contiene projectId y orgId)
+.vercel
+# Runner de GitLab: config.toml guarda el token de registro
+deploy/runner/config.toml
+deploy/runner/.runner_system_id
 # Environment variables
 .env
 .env.local
@@ -36,9 +41,13 @@ db/migrations/*.sql
 # Build outputs
 dist/
 build/
+
 # Test coverage
 coverage/
 .nyc_output/
 
 # Markdown
 *.md
+
+.vercel
+.env*

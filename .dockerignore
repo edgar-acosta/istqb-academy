@@ -1,5 +1,22 @@
 node_modules
 dist
 .git
+.gitignore
 *.swp
 *.log
+*.md
+# Nunca copiar secretos ni datos locales a la imagen
+.env
+.env.*
+!.env.example
+deploy
+data
+logs
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+coverage
+.vscode
+.playwright-mcp

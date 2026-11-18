@@ -64,7 +64,7 @@ export default function Login() {
           <p className="text-sm text-muted-foreground mt-2">
             {mode === "login"
               ? "Entra con tu usuario local para guardar tu progreso y tus intentos de evaluación."
-              : "Crea tu usuario local. La primera cuenta creada es administradora."}
+              : "Crea tu cuenta para guardar tu progreso y tus intentos de evaluación."}
           </p>
         </CardHeader>
         <CardContent>
@@ -136,8 +136,7 @@ export default function Login() {
               : "¿Ya tienes cuenta? Inicia sesión"}
           </button>
           <p className="mt-4 text-xs text-muted-foreground text-center">
-            Tus datos se guardan solo en este equipo, en el archivo
-            local <code>data/istqb.db</code>. No se usa Kimi.
+            Tus datos se guardan en la base de datos configurada para esta aplicación.
           </p>
         </CardContent>
       </Card>

@@ -11,8 +11,11 @@ import { REQUEST_ID_HEADER, runWithRequestId } from "./lib/requestcontext";
 import { authenticateRequest } from "./auth/local";
 import { getDb } from "./queries/connection";
 import { recognitions } from "../db/schema";
+import { recognitions as pgRecognitions } from "../db/postgres-schema";
+import { getPostgresDb, usePostgres } from "./queries/postgres";
 import { and, eq } from "drizzle-orm";
 import { makeRecognitionPdf } from "./lib/recognition-pdf";
+import { databaseErrorDetails } from "./lib/database-error";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
@@ -90,10 +93,13 @@ app.get("/api/recognitions/:folio/pdf", async (c) => {
     }
     throw error;
   }
-  const row = getDb().select().from(recognitions).where(and(
-    eq(recognitions.folio, c.req.param("folio")),
-    eq(recognitions.userId, user.id),
-  )).get();
+  const row = usePostgres
+    ? (await getPostgresDb().select().from(pgRecognitions).where(and(
+        eq(pgRecognitions.folio, c.req.param("folio")), eq(pgRecognitions.userId, user.id),
+      )).limit(1))[0]
+    : getDb().select().from(recognitions).where(and(
+        eq(recognitions.folio, c.req.param("folio")), eq(recognitions.userId, user.id),
+      )).get();
   if (!row) return c.json({ error: "Reconocimiento no encontrado." }, 404);
   const bytes = await makeRecognitionPdf(row);
   return new Response(bytes, {
@@ -112,18 +118,20 @@ app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
 // this the log looks clean while the request actually failed. Response stays a
 // generic 500 (no stack leaked to the caller); the detail goes to the log only.
 app.onError((err, c) => {
-  log.error("unhandled request error", {
-    method: c.req.method,
-    path: c.req.path,
-    error: err instanceof Error ? err.message : String(err),
-    stack: err instanceof Error ? err.stack : undefined,
-  });
+  const databaseError = databaseErrorDetails(err);
+  if (databaseError) {
+    log.error("unhandled database error", { method: c.req.method, path: c.req.path, databaseCode: databaseError.code });
+  } else {
+    log.error("unhandled request error", {
+      method: c.req.method, path: c.req.path, error: err.message, stack: err.stack,
+    });
+  }
   return c.json({ error: "Internal Server Error" }, 500);
 });
 
 export default app;
 
-if (env.isProduction) {
+if (env.isProduction && process.env.VERCEL !== "1") {
   const { serve } = await import("@hono/node-server");
   const { serveStaticFiles } = await import("./lib/vite");
   serveStaticFiles(app);
