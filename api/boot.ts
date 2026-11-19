@@ -132,6 +132,18 @@ app.onError((err, c) => {
 export default app;
 
 if (env.isProduction && process.env.VERCEL !== "1") {
+  // @vercel/node compila a CommonJS y rechaza el await de nivel superior, así
+  // que el arranque del servidor HTTP queda dentro de una función. En Vercel no
+  // se ejecuta: allí el handler exportado es el que atiende las peticiones.
+  startNodeServer().catch((error: unknown) => {
+    log.error("failed to start server", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    process.exitCode = 1;
+  });
+}
+
+async function startNodeServer() {
   const { serve } = await import("@hono/node-server");
   const { serveStaticFiles } = await import("./lib/vite");
   serveStaticFiles(app);

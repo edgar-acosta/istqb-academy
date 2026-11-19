@@ -1,10 +1,10 @@
-import { createRequire as makeRequire } from "node:module";
 import fs from "node:fs";
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, rgb, type PDFFont } from "pdf-lib";
 import type { recognitions } from "../../db/schema";
+import { createNodeRequire } from "./node-require";
 
-const fontRequire = makeRequire(import.meta.url);
+const fontRequire = createNodeRequire();
 const latinBytes = fs.readFileSync(fontRequire.resolve("@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff"));
 const extendedBytes = fs.readFileSync(fontRequire.resolve("@fontsource/noto-sans/files/noto-sans-latin-ext-400-normal.woff"));
 const latinGlyphs = fontkit.create(latinBytes);

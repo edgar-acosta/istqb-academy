@@ -1,12 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
-import { createRequire as makeRequire } from "node:module";
+import { createNodeRequire } from "../lib/node-require";
 import { env } from "../lib/env";
 import * as schema from "@db/schema";
 import * as relations from "@db/relations";
 
 const fullSchema = { ...schema, ...relations };
-const nodeRequire = makeRequire(import.meta.url);
+const nodeRequire = createNodeRequire();
 
 // better-sqlite3 es un módulo nativo y en un despliegue con PostgreSQL nunca se
 // usa. Cargarlo de forma diferida permite arrancar donde el binario nativo no
