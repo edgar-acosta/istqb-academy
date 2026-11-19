@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, rgb, type PDFFont } from "pdf-lib";
-import type { recognitions } from "../../db/schema";
-import { createNodeRequire } from "./node-require";
+import type { recognitions } from "../../db/schema.js";
+import { createNodeRequire } from "./node-require.js";
 
 const fontRequire = createNodeRequire();
 

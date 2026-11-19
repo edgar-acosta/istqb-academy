@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { and, eq, desc } from "drizzle-orm";
-import { createRouter, authedQuery } from "./middleware";
-import { getDb } from "./queries/connection";
-import { courseProgress, quizAttempts } from "../db/schema";
-import { COURSE_VERSION } from "@contracts/course";
-import { QUIZ_QUESTIONS, QUIZ_TOTAL } from "@contracts/quiz";
-import { getPostgresDb, usePostgres } from "./queries/postgres";
-import { courseProgress as pgProgress, quizAttempts as pgAttempts, users as pgUsers } from "../db/postgres-schema";
+import { createRouter, authedQuery } from "./middleware.js";
+import { getDb } from "./queries/connection.js";
+import { courseProgress, quizAttempts } from "../db/schema.js";
+import { COURSE_VERSION } from "../contracts/course.js";
+import { QUIZ_QUESTIONS, QUIZ_TOTAL } from "../contracts/quiz.js";
+import { getPostgresDb, usePostgres } from "./queries/postgres.js";
+import { courseProgress as pgProgress, quizAttempts as pgAttempts, users as pgUsers } from "../db/postgres-schema.js";
 
 export const trainingRouter = createRouter({
   // Progreso de módulos del usuario autenticado

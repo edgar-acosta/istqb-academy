@@ -1,4 +1,4 @@
-import { getDb } from "../api/queries/connection";
+import { getDb } from "../api/queries/connection.js";
 
 // No hay datos semilla: la primera cuenta que se registra en /login
 // queda como administradora. Este script solo verifica que la base

@@ -1,4 +1,4 @@
-import type { QuizQuestion } from "./quiz";
+import type { QuizQuestion } from "./quiz.js";
 
 export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {

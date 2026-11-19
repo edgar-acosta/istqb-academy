@@ -1,9 +1,9 @@
-import { ErrorMessages } from "@contracts/constants";
+import { ErrorMessages } from "../contracts/constants.js";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import type { TrpcContext } from "./context";
-import { log } from "./lib/logger";
-import { databaseErrorDetails } from "./lib/database-error";
+import type { TrpcContext } from "./context.js";
+import { log } from "./lib/logger.js";
+import { databaseErrorDetails } from "./lib/database-error.js";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,

@@ -1,5 +1,5 @@
 import { getRequestListener } from "@hono/node-server";
-import app from "../api/boot";
+import app from "../api/boot.js";
 
 // El runtime Node de Vercel invoca el handler con (req, res). getRequestListener
 // traduce esas peticiones al fetch de Hono, que es el adaptador soportado; un

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DrizzleQueryError } from "drizzle-orm";
-import { databaseErrorDetails } from "./database-error";
+import { databaseErrorDetails } from "./database-error.js";
 
 describe("diagnósticos seguros de base de datos", () => {
   it("identifica errores anidados sin divulgar SQL ni parámetros", () => {

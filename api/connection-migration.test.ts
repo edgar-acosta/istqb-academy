@@ -40,7 +40,7 @@ describe("inicialización sobre una base existente", () => {
     process.env.DATABASE_URL = `file:${file}`;
     let client: Database.Database | undefined;
     try {
-      const { getDb } = await import("./queries/connection");
+      const { getDb } = await import("./queries/connection.js");
       client = getDb().$client;
       expect(client.prepare("SELECT moduleId FROM module_progress").all()).toEqual([{ moduleId: 2 }]);
       expect(client.prepare("SELECT score, answers FROM quiz_attempts").get()).toEqual({ score: 8, answers: '{"q1":1}' });

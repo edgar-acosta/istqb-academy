@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { createNodeRequire } from "../lib/node-require";
-import { env } from "../lib/env";
-import * as schema from "@db/schema";
-import * as relations from "@db/relations";
+import { createNodeRequire } from "../lib/node-require.js";
+import { env } from "../lib/env.js";
+import * as schema from "../../db/schema.js";
+import * as relations from "../../db/relations.js";
 
 const fullSchema = { ...schema, ...relations };
 const nodeRequire = createNodeRequire();

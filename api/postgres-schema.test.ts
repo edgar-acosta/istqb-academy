@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { Client } from "pg";
-import { createPostgresDatabase, postgresPoolConfig } from "./queries/postgres";
-import { users, courseProgress, evaluationAttempts, recognitions } from "../db/postgres-schema";
-import { createPostgresUserQueries } from "./queries/postgres-users";
-import { hashPassword, verifyPassword } from "./auth/password";
+import { createPostgresDatabase, postgresPoolConfig } from "./queries/postgres.js";
+import { users, courseProgress, evaluationAttempts, recognitions } from "../db/postgres-schema.js";
+import { createPostgresUserQueries } from "./queries/postgres-users.js";
+import { hashPassword, verifyPassword } from "./auth/password.js";
 
 const testUrl = process.env.TEST_POSTGRES_URL;
 

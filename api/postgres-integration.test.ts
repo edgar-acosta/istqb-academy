@@ -4,18 +4,18 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { eq } from "drizzle-orm";
 import { PDFDocument } from "pdf-lib";
-import { QUIZ_QUESTIONS } from "@contracts/quiz";
-import { users } from "../db/postgres-schema";
+import { QUIZ_QUESTIONS } from "../contracts/quiz.js";
+import { users } from "../db/postgres-schema.js";
 
 const testUrl = process.env.TEST_POSTGRES_URL;
 describe.skipIf(!testUrl)("flujos PostgreSQL aislados", () => {
-  let db: ReturnType<typeof import("./queries/postgres").getPostgresDb>;
-  let close: typeof import("./queries/postgres").closePostgresDb;
-  let app: typeof import("./boot").default;
-  let training: typeof import("./training-router").trainingRouter;
-  let learning: typeof import("./postgres-learning-router").postgresLearningRouter;
-  let auth: typeof import("./auth-router").authRouter;
-  let handler: typeof import("../server/vercel").default;
+  let db: ReturnType<typeof import("./queries/postgres.js").getPostgresDb>;
+  let close: typeof import("./queries/postgres.js").closePostgresDb;
+  let app: typeof import("./boot.js").default;
+  let training: typeof import("./training-router.js").trainingRouter;
+  let learning: typeof import("./postgres-learning-router.js").postgresLearningRouter;
+  let auth: typeof import("./auth-router.js").authRouter;
+  let handler: typeof import("../server/vercel.js").default;
   let user: typeof users.$inferSelect;
   let other: typeof users.$inferSelect;
   let cookie: string;
@@ -23,14 +23,14 @@ describe.skipIf(!testUrl)("flujos PostgreSQL aislados", () => {
   beforeAll(async () => {
     if (!testUrl) throw new Error("Falta TEST_POSTGRES_URL.");
     process.env.DATABASE_URL = testUrl;
-    const postgres = await import("./queries/postgres");
+    const postgres = await import("./queries/postgres.js");
     db = postgres.getPostgresDb();
     close = postgres.closePostgresDb;
-    ({ trainingRouter: training } = await import("./training-router"));
-    ({ postgresLearningRouter: learning } = await import("./postgres-learning-router"));
-    ({ authRouter: auth } = await import("./auth-router"));
-    ({ default: app } = await import("./boot"));
-    ({ default: handler } = await import("../server/vercel"));
+    ({ trainingRouter: training } = await import("./training-router.js"));
+    ({ postgresLearningRouter: learning } = await import("./postgres-learning-router.js"));
+    ({ authRouter: auth } = await import("./auth-router.js"));
+    ({ default: app } = await import("./boot.js"));
+    ({ default: handler } = await import("../server/vercel.js"));
     const registrationContext = { req: new Request("http://localhost"), resHeaders: new Headers() };
     const registered = await auth.createCaller(registrationContext).register({
       username: `test-${randomUUID()}`, password: "synthetic-password", name: "Prueba",

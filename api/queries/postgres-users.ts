@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { users, type InsertUser, type User } from "../../db/postgres-schema";
-import { createPostgresDatabase } from "./postgres";
+import { users, type InsertUser, type User } from "../../db/postgres-schema.js";
+import { createPostgresDatabase } from "./postgres.js";
 
 type PostgresDatabase = ReturnType<typeof createPostgresDatabase>["db"];
 

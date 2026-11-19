@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getSessionCookieOptions } from "./cookies";
+import { getSessionCookieOptions } from "./cookies.js";
 
 function headers(host: string, forwardedProto?: string): Headers {
   const result = new Headers({ host });

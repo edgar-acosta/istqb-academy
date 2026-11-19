@@ -1,9 +1,9 @@
-import { authRouter } from "./auth-router";
-import { trainingRouter } from "./training-router";
-import { learningRouter } from "./learning-router";
-import { postgresLearningRouter } from "./postgres-learning-router";
-import { usePostgres } from "./queries/postgres";
-import { createRouter, publicQuery } from "./middleware";
+import { authRouter } from "./auth-router.js";
+import { trainingRouter } from "./training-router.js";
+import { learningRouter } from "./learning-router.js";
+import { postgresLearningRouter } from "./postgres-learning-router.js";
+import { usePostgres } from "./queries/postgres.js";
+import { createRouter, publicQuery } from "./middleware.js";
 
 export const appRouter = createRouter({
   ping: publicQuery.query(() => ({ ok: true, ts: Date.now() })),

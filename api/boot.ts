@@ -2,20 +2,20 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter } from "./router";
-import { createContext } from "./context";
-import { env } from "./lib/env";
-import { log } from "./lib/logger";
-import { handleClientLog } from "./lib/clientlog";
-import { REQUEST_ID_HEADER, runWithRequestId } from "./lib/requestcontext";
-import { authenticateRequest } from "./auth/local";
-import { getDb } from "./queries/connection";
-import { recognitions } from "../db/schema";
-import { recognitions as pgRecognitions } from "../db/postgres-schema";
-import { getPostgresDb, usePostgres } from "./queries/postgres";
+import { appRouter } from "./router.js";
+import { createContext } from "./context.js";
+import { env } from "./lib/env.js";
+import { log } from "./lib/logger.js";
+import { handleClientLog } from "./lib/clientlog.js";
+import { REQUEST_ID_HEADER, runWithRequestId } from "./lib/requestcontext.js";
+import { authenticateRequest } from "./auth/local.js";
+import { getDb } from "./queries/connection.js";
+import { recognitions } from "../db/schema.js";
+import { recognitions as pgRecognitions } from "../db/postgres-schema.js";
+import { getPostgresDb, usePostgres } from "./queries/postgres.js";
 import { and, eq } from "drizzle-orm";
-import { makeRecognitionPdf } from "./lib/recognition-pdf";
-import { databaseErrorDetails } from "./lib/database-error";
+import { makeRecognitionPdf } from "./lib/recognition-pdf.js";
+import { databaseErrorDetails } from "./lib/database-error.js";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
 
@@ -145,7 +145,7 @@ if (env.isProduction && process.env.VERCEL !== "1") {
 
 async function startNodeServer() {
   const { serve } = await import("@hono/node-server");
-  const { serveStaticFiles } = await import("./lib/vite");
+  const { serveStaticFiles } = await import("./lib/vite.js");
   serveStaticFiles(app);
 
   const port = parseInt(process.env.PORT || "3000");

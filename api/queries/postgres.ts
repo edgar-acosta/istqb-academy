@@ -1,8 +1,8 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool, type PoolConfig } from "pg";
-import * as schema from "../../db/postgres-schema";
-import { env } from "../lib/env";
-import { trustedCaFor } from "../lib/database-ca";
+import * as schema from "../../db/postgres-schema.js";
+import { env } from "../lib/env.js";
+import { trustedCaFor } from "../lib/database-ca.js";
 
 export function postgresPoolConfig(connectionString: string): PoolConfig {
   const parsed = new URL(connectionString);

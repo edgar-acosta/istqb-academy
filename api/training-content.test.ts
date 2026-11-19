@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
-import { QUIZ_QUESTIONS, QUIZ_TOTAL, LEGACY_QUIZ_QUESTIONS } from "@contracts/quiz";
+import { QUIZ_QUESTIONS, QUIZ_TOTAL, LEGACY_QUIZ_QUESTIONS } from "../contracts/quiz.js";
 import { MODULES } from "../src/content";
-import * as schema from "../db/schema";
-import * as relations from "../db/relations";
-import { trainingRouter } from "./training-router";
-import { learningRouter } from "./learning-router";
+import * as schema from "../db/schema.js";
+import * as relations from "../db/relations.js";
+import { trainingRouter } from "./training-router.js";
+import { learningRouter } from "./learning-router.js";
 import { PDFDocument } from "pdf-lib";
-import app from "./boot";
+import app from "./boot.js";
 
 vi.mock("./queries/connection", () => ({ getDb: () => testDb }));
 vi.mock("./auth/local", () => ({

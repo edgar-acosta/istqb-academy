@@ -13,7 +13,7 @@ export interface QuizQuestion {
 
 export const QUIZ_TOTAL = 10;
 
-export { QUIZ_QUESTIONS } from "./quiz-telemetry";
+export { QUIZ_QUESTIONS } from "./quiz-telemetry.js";
 
 // Se conservan las preguntas originales para interpretar los intentos históricos
 // identificados con q1…q10; los intentos nuevos usan identificadores v2.

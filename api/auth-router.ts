@@ -1,19 +1,19 @@
 import * as cookie from "cookie";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { Session } from "@contracts/constants";
-import { getSessionCookieOptions } from "./lib/cookies";
-import { createRouter, authedQuery, publicQuery } from "./middleware";
-import { signSessionToken } from "./auth/session";
-import { hashPassword, verifyPassword } from "./auth/password";
-import { usePostgres } from "./queries/postgres";
+import { Session } from "../contracts/constants.js";
+import { getSessionCookieOptions } from "./lib/cookies.js";
+import { createRouter, authedQuery, publicQuery } from "./middleware.js";
+import { signSessionToken } from "./auth/session.js";
+import { hashPassword, verifyPassword } from "./auth/password.js";
+import { usePostgres } from "./queries/postgres.js";
 import {
   countUsers,
   createUser,
   findUserByUsername,
   toPublicUser,
   updateLastSignIn,
-} from "./queries/users";
+} from "./queries/users.js";
 
 const usernameInput = z
   .string()

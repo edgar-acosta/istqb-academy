@@ -2,12 +2,12 @@ import { randomBytes } from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { COURSE_MODULE_TOTAL, COURSE_TITLE, COURSE_VERSION, PASSING_PERCENT, RECOGNITION_ISSUER } from "@contracts/course";
-import { LEGACY_QUIZ_QUESTIONS, QUIZ_QUESTIONS, type QuizQuestion } from "@contracts/quiz";
-import { courseProgress, evaluationAttempts, moduleProgress, quizAttempts, recognitions } from "../db/schema";
-import { getDb } from "./queries/connection";
-import { adminQuery, authedQuery, createRouter } from "./middleware";
-import { supportsRecognitionName } from "./lib/recognition-pdf";
+import { COURSE_MODULE_TOTAL, COURSE_TITLE, COURSE_VERSION, PASSING_PERCENT, RECOGNITION_ISSUER } from "../contracts/course.js";
+import { LEGACY_QUIZ_QUESTIONS, QUIZ_QUESTIONS, type QuizQuestion } from "../contracts/quiz.js";
+import { courseProgress, evaluationAttempts, moduleProgress, quizAttempts, recognitions } from "../db/schema.js";
+import { getDb } from "./queries/connection.js";
+import { adminQuery, authedQuery, createRouter } from "./middleware.js";
+import { supportsRecognitionName } from "./lib/recognition-pdf.js";
 
 type Attempt = typeof evaluationAttempts.$inferSelect;
 

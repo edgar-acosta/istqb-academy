@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import * as schema from "@db/schema";
-import type { InsertUser, User } from "@db/schema";
-import { getDb } from "./connection";
-import { createPostgresUserQueries } from "./postgres-users";
-import { getPostgresDb, usePostgres } from "./postgres";
+import * as schema from "../../db/schema.js";
+import type { InsertUser, User } from "../../db/schema.js";
+import { getDb } from "./connection.js";
+import { createPostgresUserQueries } from "./postgres-users.js";
+import { getPostgresDb, usePostgres } from "./postgres.js";
 
 export type PublicUser = Omit<User, "passwordHash">;
 
