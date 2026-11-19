@@ -33,8 +33,11 @@ deploy/runner/.runner_system_id
 .env.*.local
 # Database
 *.db
+*.db-wal
+*.db-shm
 *.sqlite
 *.sqlite3
+data/
 db/migrations/*.sql
 # TypeScript cache
 *.tsbuildinfo
