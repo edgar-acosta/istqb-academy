@@ -5,12 +5,37 @@ import type { recognitions } from "../../db/schema";
 import { createNodeRequire } from "./node-require";
 
 const fontRequire = createNodeRequire();
-const latinBytes = fs.readFileSync(fontRequire.resolve("@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff"));
-const extendedBytes = fs.readFileSync(fontRequire.resolve("@fontsource/noto-sans/files/noto-sans-latin-ext-400-normal.woff"));
-const latinGlyphs = fontkit.create(latinBytes);
-const extendedGlyphs = fontkit.create(extendedBytes);
+
+interface LoadedFonts {
+  latinBytes: Buffer;
+  extendedBytes: Buffer;
+  latinGlyphs: ReturnType<typeof fontkit.create>;
+  extendedGlyphs: ReturnType<typeof fontkit.create>;
+}
+
+let fonts: LoadedFonts | undefined;
+
+// La carga de fuentes es diferida a propósito: leer archivos y parsear glifos en
+// el nivel superior del módulo obliga a cada arranque en frío de la función
+// serverless a resolver @fontsource/noto-sans desde un node_modules recortado.
+// Si esa resolución falla, el módulo entero no carga y todas las rutas (incluso
+// el ping) devuelven 500. Solo la emisión del PDF necesita las fuentes.
+function loadFonts(): LoadedFonts {
+  if (!fonts) {
+    const latinBytes = fs.readFileSync(fontRequire.resolve("@fontsource/noto-sans/files/noto-sans-latin-400-normal.woff"));
+    const extendedBytes = fs.readFileSync(fontRequire.resolve("@fontsource/noto-sans/files/noto-sans-latin-ext-400-normal.woff"));
+    fonts = {
+      latinBytes,
+      extendedBytes,
+      latinGlyphs: fontkit.create(latinBytes),
+      extendedGlyphs: fontkit.create(extendedBytes),
+    };
+  }
+  return fonts;
+}
 
 export function supportsRecognitionName(name: string): boolean {
+  const { latinGlyphs, extendedGlyphs } = loadFonts();
   return [...name].every((c) => {
     const code = c.codePointAt(0);
     return code !== undefined && (latinGlyphs.hasGlyphForCodePoint(code) || extendedGlyphs.hasGlyphForCodePoint(code));
@@ -18,6 +43,7 @@ export function supportsRecognitionName(name: string): boolean {
 }
 
 export async function makeRecognitionPdf(recognition: typeof recognitions.$inferSelect) {
+  const { latinBytes, extendedBytes, latinGlyphs, extendedGlyphs } = loadFonts();
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
   const latin = await pdf.embedFont(latinBytes);
