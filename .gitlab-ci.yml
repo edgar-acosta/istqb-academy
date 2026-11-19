@@ -25,7 +25,9 @@ deploy_production:
     # Sin --prebuilt a propósito: Vercel construye en su infraestructura igual
     # que hasta ahora, así que sigue aplicando el bloque `builds` de vercel.json.
     # Con --prebuilt el build corre en el runner y ese formato legacy no aplica.
-    - vercel deploy --prod --yes --token=$VERCEL_TOKEN -m gitlabDeployment=1 -m gitlabCommitRef=$CI_COMMIT_BRANCH
+    # --logs imprime los errores de compilación en el log del job: sin el flag,
+    # un fallo de build solo devuelve un código de salida y la URL del inspector.
+    - vercel deploy --prod --yes --logs --token=$VERCEL_TOKEN --meta gitlabDeployment=1 --meta gitlabCommitRef=$CI_COMMIT_BRANCH
 
 # Opcional: despliegues de vista previa en ramas y merge requests.
 # deploy_preview:
