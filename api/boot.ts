@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { bodyLimit } from "hono/body-limit";
+import type { MiddlewareHandler } from "hono";
 import type { HttpBindings } from "@hono/node-server";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "./router.js";
@@ -57,14 +57,23 @@ app.use("*", async (c, next) => {
   });
 });
 
-// Scoped to the tRPC route, NOT global: on the dev server (@hono/vite-dev-server)
-// a global bodyLimit breaks bodyless requests. Hono's bodyLimit reads any truthy
-// request stream to the end and then rebuilds the Request with `new Request(raw,
-// { body, duplex: "half" })`; the dev server's Response/Request class makes that
-// rebuild throw `TypeError: Cannot read private member #state ...`, so every
-// bodyless request (DELETE/PATCH on the app's own REST routes) 500s at dispatch.
-// /api/log keeps its own 64KB caps in lib/clientlog.ts, so it needs no middleware.
-app.use("/api/trpc/*", bodyLimit({ maxSize: 50 * 1024 * 1024 }));
+// Hono's bodyLimit cannot be used here: it only trusts a Content-Length header
+// and otherwise reads the request stream to the end and rebuilds the Request
+// with `new Request(raw, { body, duplex: "half" })`. Vercel forwards requests to
+// the function with `transfer-encoding: chunked` (no Content-Length), so that
+// path runs on every POST and the rebuild never resolves — every mutation hung
+// until the platform timeout. This guard only inspects the header, so it never
+// consumes the body. Platform limits still cap an unchunked oversized upload
+// (4.5 MB on Vercel), and lib/clientlog.ts caps its own payload.
+function contentLengthLimit(maxSize: number): MiddlewareHandler {
+  return async (c, next) => {
+    const declared = c.req.header("content-length");
+    if (declared && Number(declared) > maxSize) return c.body(null, 413);
+    return next();
+  };
+}
+
+app.use("/api/trpc/*", contentLengthLimit(50 * 1024 * 1024));
 app.use("/api/trpc/*", async (c) => {
   return fetchRequestHandler({
     endpoint: "/api/trpc",
@@ -74,14 +83,8 @@ app.use("/api/trpc/*", async (c) => {
   });
 });
 // Browser-side log sink (see lib/clientlog.ts). Must be registered before the
-// /api/* 404 catch-all below. bodyLimit guards it too: lib/clientlog.ts caps the
-// body itself, but only AFTER Hono has read it into memory, and this route sits
-// on the public preview URL — the cap has to bite before the read.
-app.post(
-  "/api/log",
-  bodyLimit({ maxSize: 64 * 1024, onError: (c) => c.body(null, 413) }),
-  handleClientLog,
-);
+// /api/* 404 catch-all below.
+app.post("/api/log", contentLengthLimit(64 * 1024), handleClientLog);
 app.get("/api/recognitions/:folio/pdf", async (c) => {
   let user;
   try {
